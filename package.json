@@ -1,0 +1,19 @@
+{
+  "name": "fuellstand",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chrispahm/fuellstand.git"
+  },
+  "author": "Christoph Pahmeyer <christoph.pahmeyer@uni-bonn.de>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chrispahm/fuellstand/issues"
+  },
+  "homepage": "https://github.com/chrispahm/fuellstand#readme"
+}
