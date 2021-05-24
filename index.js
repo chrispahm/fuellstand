@@ -1,6 +1,7 @@
 const https = require('https');
 const http = require('http');
-const server = http.createServer().listen(3000);
+const port = process.env.PORT || 80;
+const server = http.createServer().listen(port);
 const qs = require('querystring');
 
 server.on('request', (req, res) => {
