@@ -3,6 +3,8 @@ const A1 = NodeMCU.D1;
 
 const wifi = require("Wifi");
 const http = require("http");
+// NodeMCU.D5 - CLK, NodeMCU.D6 - DIO ports
+// const display = require("https://github.com/xMlex/TM1637/blob/master/TM1637.js").connect(NodeMCU.D5, NodeMCU.D6);
 
 function connectWifi() {
   return new Promise((resolve,reject) => {
@@ -93,7 +95,7 @@ const sensor = require("HC-SR04").connect(A0,A1,function(dist) {
     values.push(dist)
   }
   // update display with latest value
-  // updateDisplay(volume(dist))
+  // display.show(Math.round(calcVolume(dist)).toString())
 });
 
 // trigger sensor once even before WiFi is found
