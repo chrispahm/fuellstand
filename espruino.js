@@ -69,48 +69,44 @@ function median(numbers) {
   return isEven ? (sorted[middle - 1.5] + sorted[middle - 0.5]) / 2 : sorted[middle - 1];
 }
 
-let lastValue = 0;
 let values = [];
+let lastUploadTime = 0;
 
 const sensor = require("HC-SR04").connect(A0,A1,function(dist) {
   // console.log(dist+" cm away");
   // console.log(values.length)
-  if (values.length < 10) {
-    values.push(dist);
-  } else {
-    const medianDist = median(values);
-      if (medianDist > lastValue * 1.05 || medianDist < lastValue * 0.95) {
-      const volume = calcVolume(medianDist);
-      const time = new Date();
-      const id = `${time.toISOString()}::${Math.round(medianDist)}:: ${Math.round(volume)}`;
-      console.log(`Dist: ${Math.round(medianDist)}, Vol: ${Math.round(volume)}`);
-      post('http://tankstelle.herokuapp.com/https%3A%2F%2Ffruchtfolge.agp.uni-bonn.de%2Fdb%2Ffuellstand%2F', { _id: id } );
-      lastValue = medianDist;
-  } else {
-    console.log(medianDist,lastValue);
-  }
+  const now = new Date()
+  const timeDiff = (now - lastUploadTime) / (1000 * 60);
+  const hour = now.getHours();
+  // console.log(hour, timeDiff, values.length)
+  // only upload data between 5h - 24h, due to Heroku Dyno limit of 18h/d
+  if (hour > 5 && timeDiff > 30 && values.length > 10) {
+    const last10 = values.slice(-10);
+    const medianDist = median(last10);
+    const volume = calcVolume(medianDist);
+    const id = `${now.toISOString()}::${Math.round(medianDist)}:: ${Math.round(volume)}`;
+    console.log(`Dist: ${Math.round(medianDist)}, Vol: ${Math.round(volume)}`);
+    post('http://tankstelle.herokuapp.com/https%3A%2F%2Ffruchtfolge.agp.uni-bonn.de%2Fdb%2Ffuellstand%2F', { _id: id } );
     values = [];
+    lastUploadTime = now;
+  } else {
+    values.push(dist)
   }
-
+  // update display with latest value
+  // updateDisplay(volume(dist))
 });
 
-function startMeasure() {
-  // measure 10 times
-  let counter = 0;
-  const measure = setInterval(function() {
-    sensor.trigger(); // send pulse
-    // console.log(counter);
-    counter += 1;
-    if (counter > 10) {
-      clearInterval(measure);
-    }
-  }, 5000);
-}
+// trigger sensor once even before WiFi is found
+// this way, if the WiFi is down (as usual)
+// the display still gets updated, since the script will 
+// constantly be re-started
+sensor.trigger()
+
 connectWifi()
   .then(setCorrectTime)
   .then(() => {
-    startMeasure();
-    // repeat every 60 minutes
-    setInterval(startMeasure, 1000 * 60 * 60);
+    const measure = setInterval(function() {
+      sensor.trigger();
+    }, 5000);
   })
   .catch(console.log);
