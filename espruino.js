@@ -4,7 +4,7 @@ const A1 = NodeMCU.D1;
 const wifi = require("Wifi");
 const http = require("http");
 // NodeMCU.D5 - CLK, NodeMCU.D6 - DIO ports
-// const display = require("https://github.com/xMlex/TM1637/blob/master/TM1637.js").connect(NodeMCU.D5, NodeMCU.D6);
+const display = require("https://github.com/xMlex/TM1637/blob/master/TM1637.js").connect(NodeMCU.D5, NodeMCU.D6);
 
 function connectWifi() {
   return new Promise((resolve,reject) => {
@@ -22,7 +22,7 @@ function connectWifi() {
 function setCorrectTime() {
   return new Promise(resolve => {
     http.get('http://icanhazip.com/', function (res) {
-      setTime(new Date(res.headers.Date)/1000);
+      setTime(new Date(res.headers.Date)/1000);      
       resolve()
     });
   })
@@ -94,8 +94,18 @@ const sensor = require("HC-SR04").connect(A0,A1,function(dist) {
   } else {
     values.push(dist)
   }
+  
   // update display with latest value
-  // display.show(Math.round(calcVolume(dist)).toString())
+  if (values.length > 10) {
+    const last10Disp = values.slice(-10);
+    const medianDisp = median(last10Disp);
+    const volumeDisp = calcVolume(medianDisp);
+    display.show(Math.round(volumeDisp).toString())
+  } else {
+    display.show(Math.round(calcVolume(dist)).toString())
+  }
+  
+  
 });
 
 // trigger sensor once even before WiFi is found
